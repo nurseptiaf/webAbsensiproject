@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './Login';
 import Register from './Register';
 import Dashboard from './Dashboard';
+import Profile from './Profile';
 import Attendance from './Attendance';
 import Leave from './Leave';
 import Reimbursement from './Reimbursement';
@@ -31,6 +32,7 @@ function App() {
 
         {/* Employee routes */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={< Profile />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/leave" element={<Leave />} />
         <Route path="/reimbursement" element={<Reimbursement />} />

@@ -1,4 +1,6 @@
 const Attendance = require('../models/Attendance.js');
+const Leave = require('../models/Leave');
+const User = require('../models/User');
 
 exports.checkIn = async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
@@ -46,7 +48,11 @@ exports.getTodayAttendanceForManager = async (req, res) => {
   const today = new Date().toISOString().split('T')[0];
 
   try {
-    const users = await User.find({ role: 'employee' });
+    const users = await User.find({ role: 'karyawan' });
+
+    if (!users.length) {
+      return res.status(404).json({ message: 'No karyawan found' });
+    }
 
     const attendanceData = await Promise.all(users.map(async user => {
       const attendance = await Attendance.findOne({ employeeId: user._id, date: today });
@@ -57,7 +63,12 @@ exports.getTodayAttendanceForManager = async (req, res) => {
 
       if (attendance) {
         status = 'Present';
-        checkInTime = new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        checkInTime = attendance.checkInTime
+          ? new Date(attendance.checkInTime).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : 'No Entry';
       } else if (leave) {
         status = 'On Leave';
       }
@@ -71,10 +82,11 @@ exports.getTodayAttendanceForManager = async (req, res) => {
 
     res.json(attendanceData);
   } catch (err) {
-    console.error(err);
+    console.error('Error getting attendance data:', err);
     res.status(500).json({ message: 'Failed to get attendance data' });
   }
 };
+
 // Pastikan hanya manajer bisa akses
 exports.getAllAttendanceRecords = async (req, res) => {
   if (req.user.role !== 'manajer') {

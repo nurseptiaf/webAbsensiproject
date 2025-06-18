@@ -17,11 +17,14 @@ export default function RiwayatAbsensi() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/attendance/all", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "http://localhost:8000/api/attendance/all",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await response.json();
         setHistory(data);
       } catch (error) {
@@ -48,26 +51,48 @@ export default function RiwayatAbsensi() {
       {/* Sidebar */}
       <aside className="w-64 bg-blue-300 p-6 flex flex-col justify-between">
         <div>
-          <div className="text-center text-2xl font-bold mb-10">YukAbsen</div>
+          <div className="text-center text-2xl font-bold mb-10">
+            <span className="bg-gradient-to-r from-blue-100 to-yellow-200 bg-clip-text text-transparent">
+              YukAbsen
+            </span>
+          </div>
           <nav className="flex flex-col gap-6">
-            <Link to="/manager/managerdashboard" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/managerdashboard"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHome /> Dashboard
             </Link>
-            <Link to="/manager/kelola-leave" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-leave"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaCalendarCheck /> Kelola Leave
             </Link>
-            <Link to="/manager/kelola-reimbursement" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-reimbursement"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaMoneyBill /> Kelola Reimbursement
             </Link>
-            <Link to="/manager/riwayat-absen" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/riwayat-absen"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHistory /> Riwayat Absen
             </Link>
-            <Link to="/manager/kelola-karyawan" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-karyawan"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaUsers /> Kelola Data Karyawan
             </Link>
           </nav>
         </div>
-        <button onClick={handleLogout} className="flex items-center gap-3 text-sm font-semibold text-gray-700 hover:text-red-600">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 text-sm font-semibold text-gray-700 hover:text-red-600"
+        >
           <FaSignOutAlt /> Logout
         </button>
       </aside>

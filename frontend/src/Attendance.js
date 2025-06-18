@@ -6,8 +6,9 @@ import {
   FaMoneyBill,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { Bell, User } from "lucide-react";
+import { User } from "lucide-react";
 import SuccessModal from "./SuccessModal";
+import { Link } from "react-router-dom";
 
 export default function Attendance() {
   const token = localStorage.getItem("token");
@@ -135,7 +136,12 @@ export default function Attendance() {
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-blue-300 p-6 flex flex-col justify-between">
         <div>
-          <div className="text-center text-2xl font-bold mb-10">YukAbsen</div>
+        
+          <div className="text-center text-2xl font-bold mb-10">
+            <span className="bg-gradient-to-r from-blue-100 to-yellow-200 bg-clip-text text-transparent">
+              YukAbsen
+            </span>
+          </div>
           <nav className="flex flex-col gap-6">
             <a
               href="/dashboard"
@@ -228,8 +234,9 @@ export default function Attendance() {
           </div>
 
           <div className="flex gap-4">
-            <Bell className="w-6 h-6 text-gray-600" />
-            <User className="w-6 h-6 text-gray-600" />
+            <Link to="/profile">
+              <User className="w-6 h-6 text-gray-600 hover:text-blue-500 cursor-pointer" />
+            </Link>
           </div>
         </div>
 

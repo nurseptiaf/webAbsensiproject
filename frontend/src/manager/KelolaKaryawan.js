@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+
 import {
   FaUsers,
   FaEdit,
@@ -22,11 +23,7 @@ export default function KelolaKaryawan() {
 
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const res = await fetch("http://localhost:8000/api/users", {
         headers: {
@@ -42,10 +39,21 @@ export default function KelolaKaryawan() {
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
 
   const handleAdd = () => {
-    setEditData({ username: "", name: "", position: "", email: "", password: "" });
+    setEditData({
+      username: "",
+      name: "",
+      position: "",
+      email: "",
+      password: "",
+    });
     setIsAdding(true);
     setShowModal(true);
   };
@@ -77,7 +85,12 @@ export default function KelolaKaryawan() {
       ? "http://localhost:8000/api/users"
       : `http://localhost:8000/api/users/${editData._id}`;
 
-    if (!editData.username || !editData.name || !editData.position || !editData.email) {
+    if (
+      !editData.username ||
+      !editData.name ||
+      !editData.position ||
+      !editData.email
+    ) {
       alert("Semua field harus diisi!");
       return;
     }
@@ -127,33 +140,55 @@ export default function KelolaKaryawan() {
   };
 
   const filteredEmployees = employees.filter((emp) => {
-  const nameMatch = emp.name?.toLowerCase().includes(searchTerm.toLowerCase());
-  const positionMatch = filterPosition ? emp.position === filterPosition : true;
-  return nameMatch && positionMatch;
+    const nameMatch = emp.name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const positionMatch = filterPosition
+      ? emp.position === filterPosition
+      : true;
+    return nameMatch && positionMatch;
   });
 
-
-  const uniquePositions = [...new Set(employees.map(emp => emp.position))];
+  const uniquePositions = [...new Set(employees.map((emp) => emp.position))];
 
   return (
     <div className="flex h-screen bg-gray-100">
       <aside className="w-64 bg-blue-300 p-6 flex flex-col justify-between">
         <div>
-          <div className="text-center text-2xl font-bold mb-10">YukAbsen</div>
+          <div className="text-center text-2xl font-bold mb-10">
+            <span className="bg-gradient-to-r from-blue-100 to-yellow-200 bg-clip-text text-transparent">
+              YukAbsen
+            </span>
+          </div>
           <nav className="flex flex-col gap-6">
-            <Link to="/manager/managerdashboard" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/managerdashboard"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHome /> Dashboard
             </Link>
-            <Link to="/manager/kelola-leave" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-leave"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaCalendarCheck /> Kelola Leave
             </Link>
-            <Link to="/manager/kelola-reimbursement" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-reimbursement"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaMoneyBill /> Kelola Reimbursement
             </Link>
-            <Link to="/manager/riwayat-absen" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/riwayat-absen"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHistory /> Riwayat Absen
             </Link>
-            <Link to="/manager/kelola-karyawan" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-karyawan"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaUsers /> Kelola Data Karyawan
             </Link>
           </nav>
@@ -172,7 +207,7 @@ export default function KelolaKaryawan() {
         <div className="mb-4 flex flex-wrap items-center gap-4">
           <button
             onClick={handleAdd}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
+            className="bg-yellow-300 text-white px-4 py-2 rounded hover:bg-yellow-700 flex items-center gap-2"
           >
             <FaPlus /> Tambah Karyawan
           </button>
@@ -216,10 +251,16 @@ export default function KelolaKaryawan() {
                   <td className="p-3">{emp.position}</td>
                   <td className="p-3">{emp.email}</td>
                   <td className="p-3 flex items-center gap-3">
-                    <button onClick={() => handleEdit(emp)} className="text-blue-600 hover:text-blue-800">
+                    <button
+                      onClick={() => handleEdit(emp)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
                       <FaEdit />
                     </button>
-                    <button onClick={() => handleDelete(emp._id)} className="text-red-600 hover:text-red-800">
+                    <button
+                      onClick={() => handleDelete(emp._id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
                       <FaTrash />
                     </button>
                   </td>
@@ -240,7 +281,9 @@ export default function KelolaKaryawan() {
                   <input
                     type="text"
                     value={editData.username}
-                    onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, username: e.target.value })
+                    }
                     placeholder="Username"
                     className="w-full border p-2 rounded"
                   />
@@ -248,21 +291,27 @@ export default function KelolaKaryawan() {
                 <input
                   type="text"
                   value={editData.name}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({ ...editData, name: e.target.value })
+                  }
                   placeholder="Nama"
                   className="w-full border p-2 rounded"
                 />
                 <input
                   type="text"
                   value={editData.position}
-                  onChange={(e) => setEditData({ ...editData, position: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({ ...editData, position: e.target.value })
+                  }
                   placeholder="Posisi"
                   className="w-full border p-2 rounded"
                 />
                 <input
                   type="email"
                   value={editData.email}
-                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({ ...editData, email: e.target.value })
+                  }
                   placeholder="Email"
                   className="w-full border p-2 rounded"
                 />
@@ -270,7 +319,9 @@ export default function KelolaKaryawan() {
                   <input
                     type="password"
                     value={editData.password}
-                    onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, password: e.target.value })
+                    }
                     placeholder="Password"
                     className="w-full border p-2 rounded"
                   />

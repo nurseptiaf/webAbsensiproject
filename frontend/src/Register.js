@@ -1,77 +1,101 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('karyawan');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    position: "",
+    role: "karyawan",
+  });
+
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     try {
-      const res = await axios.post('http://localhost:8000/api/auth/register', {
-        username,
-        password,
-        role,
-      });
-
-      setSuccess(res.data.message || 'Pendaftaran berhasil');
-      setTimeout(() => navigate('/login'), 1500); // redirect ke login setelah sukses
+      await axios.post("http://localhost:8000/api/auth/register", formData);
+      alert("Registrasi berhasil! Silakan login.");
+      navigate("/login");
     } catch (err) {
-      console.error('Register error:', err.response?.data);
-      setError(err.response?.data?.message || 'Pendaftaran gagal');
+      alert(
+        err.response?.data?.message || "Registrasi gagal. Coba lagi nanti."
+      );
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleRegister}
-        className="bg-white p-8 rounded shadow-md w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
-        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
-        {success && <p className="text-green-600 mb-3 text-sm">{success}</p>}
-
+    <div className="flex justify-center items-center h-screen bg-blue-100">
+      <form onSubmit={handleRegister} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Register</h2>
         <input
           type="text"
-          placeholder="Username"
+          name="name"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={handleChange}
           className="w-full mb-3 px-4 py-2 border rounded"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
           required
         />
-
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          className="w-full mb-3 px-4 py-2 border rounded"
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full mb-3 px-4 py-2 border rounded"
+          required
+        />
         <input
           type="password"
+          name="password"
           placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
           className="w-full mb-3 px-4 py-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           required
         />
-
+        <input
+          type="text"
+          name="position"
+          placeholder="Position (optional)"
+          value={formData.position}
+          onChange={handleChange}
+          className="w-full mb-3 px-4 py-2 border rounded"
+        />
         <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
           className="w-full mb-4 px-4 py-2 border rounded"
-          required
         >
           <option value="karyawan">Karyawan</option>
           <option value="manajer">Manajer</option>
         </select>
-
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
-          Daftar
+          Register
         </button>
       </form>
     </div>

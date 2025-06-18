@@ -106,7 +106,11 @@ export default function KelolaReimbursement() {
       {/* Sidebar */}
       <aside className="w-64 bg-blue-300 p-6 flex flex-col justify-between">
         <div>
-          <div className="text-center text-2xl font-bold mb-10">YukAbsen</div>
+          <div className="text-center text-2xl font-bold mb-10">
+            <span className="bg-gradient-to-r from-blue-100 to-yellow-200 bg-clip-text text-transparent">
+              YukAbsen
+            </span>
+          </div>
           <nav className="flex flex-col gap-6">
             <Link
               to="/manager/managerdashboard"

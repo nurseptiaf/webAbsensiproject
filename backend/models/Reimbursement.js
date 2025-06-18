@@ -5,6 +5,7 @@ const ReimbursementSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     reason: { type: String, required: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
-});
+}, 
+{ timestamps: true });
 
 module.exports = mongoose.model('Reimbursement', ReimbursementSchema);

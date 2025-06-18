@@ -3,26 +3,67 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-    const { username, password, role } = req.body;
-    if (!['karyawan', 'manajer'].includes(role)) return res.status(400).json({ message: 'Role tidak valid' });
+  const { username, password, role, name, position, email } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword, role });
-    await user.save();
+  if (!username || !password || !role || !name || !email) {
+    return res.status(400).json({ message: 'Harap isi semua data yang wajib' });
+  }
 
-    res.status(201).json({ message: 'User registered' });
-};
+  if (!['karyawan', 'manajer'].includes(role)) {
+    return res.status(400).json({ message: 'Role tidak valid' });
+  }
 
-exports.login = async (req, res) => {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+  try {
+    const existingUsername = await User.findOne({ username });
+    const existingEmail = await User.findOne({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(400).json({ message: 'Invalid credentials' });
+    if (existingUsername) {
+      return res.status(400).json({ message: 'Username sudah digunakan' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    if (existingEmail) {
+      return res.status(400).json({ message: 'Email sudah digunakan' });
+    }
 
-    // Kirim token, role, dan username ke frontend
-    res.json({ token, role: user.role, username: user.username });
+    const user = new User({
+      username,
+      password,
+      role,
+      name,
+      position: position || '', // opsional
+      email,
+    });
+
+    await user.save();
+
+    res.status(201).json({ message: 'User berhasil terdaftar' });
+  } catch (err) {
+    res.status(500).json({ message: 'Terjadi kesalahan saat registrasi' });
+  }
+};
+
+
+exports.login = async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ username });
+
+  if (!user) {
+    console.log("User tidak ditemukan");
+    return res.status(400).json({ message: 'Invalid credentials' });
+  }
+
+  // Debugging: log password input dan hash
+  console.log("Password input:", password);
+  console.log("Password di database:", user.password);
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  console.log("Hasil compare:", isMatch);
+
+  if (!isMatch) {
+    return res.status(400).json({ message: 'Invalid credentials' });
+  }
+
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+  res.json({ token, role: user.role, username: user.username });
 };

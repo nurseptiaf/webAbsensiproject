@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaHome,
   FaUsers,
@@ -7,15 +7,24 @@ import {
   FaHistory,
   FaCalendarCheck,
 } from "react-icons/fa";
-import { Bell, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import axios from "axios";
 
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const managerName = localStorage.getItem("username") || "Manager";
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [stats, setStats] = useState({
+    totalEmployees: 0,
+    presentToday: 0,
+    onLeaveToday: 0,
+    absentToday: 0,
+  });
+
+  const [attendanceToday, setAttendanceToday] = useState([]);
+  const [recentRequests, setRecentRequests] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -24,32 +33,99 @@ export default function ManagerDashboard() {
     navigate("/login");
   };
 
-  const recentRequests = [
-    { id: 1, name: "Andi", type: "Leave", status: "Pending" },
-    { id: 2, name: "Budi", type: "Reimbursement", status: "Approved" },
-    { id: 3, name: "Cici", type: "Leave", status: "Rejected" },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    const fetchDashboardStats = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8000/api/dashboard/manager-summary",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setStats({
+          totalEmployees: res.data.totalEmployees,
+          presentToday: res.data.presentToday,
+          onLeaveToday: res.data.onLeaveToday,
+          absentToday: res.data.absentToday,
+        });
+      } catch (err) {
+        console.error("Error fetching dashboard stats:", err);
+      }
+    };
+
+    const fetchAttendanceToday = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8000/api/attendance/manager/today",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setAttendanceToday(res.data);
+      } catch (err) {
+        console.error("Error fetching attendance today:", err);
+      }
+    };
+    const fetchRecentRequests = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8000/api/dashboard/recent-requests",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setRecentRequests(res.data);
+      } catch (err) {
+        console.error("Error fetching recent requests:", err);
+      }
+    };
+
+    fetchDashboardStats();
+    fetchAttendanceToday();
+    fetchRecentRequests();
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-blue-300 p-6 flex flex-col justify-between">
         <div>
-          <div className="text-center text-2xl font-bold mb-10">YukAbsen</div>
+          <div className="text-center text-2xl font-bold mb-10">
+            <span className="bg-gradient-to-r from-blue-100 to-yellow-200 bg-clip-text text-transparent">
+              YukAbsen
+            </span>
+          </div>
           <nav className="flex flex-col gap-6">
-            <Link to="/manager/dashboard" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/dashboard"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHome /> Dashboard
             </Link>
-            <Link to="/manager/kelola-leave" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-leave"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaCalendarCheck /> Kelola Leave
             </Link>
-            <Link to="/manager/kelola-Reimbursement" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-Reimbursement"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaMoneyBill /> Kelola Reimbursement
             </Link>
-            <Link to="/manager/riwayat-absen" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/riwayat-absen"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaHistory /> Riwayat Absen
             </Link>
-            <Link to="/manager/kelola-karyawan" className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+            <Link
+              to="/manager/kelola-karyawan"
+              className="flex items-center gap-3 text-sm font-semibold text-gray-700"
+            >
               <FaUsers /> Kelola Data Karyawan
             </Link>
           </nav>
@@ -76,18 +152,18 @@ export default function ManagerDashboard() {
             </h2>
             <h1 className="mt-2 text-2xl font-bold">Welcome, {managerName}</h1>
           </div>
-          <div className="flex gap-4">
-            <Bell className="w-6 h-6 text-gray-600" />
-            <User className="w-6 h-6 text-gray-600" />
-          </div>
         </div>
 
         {/* Statistic Cards */}
         <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card title="Total Employees" value="120" color="gray" />
-          <Card title="Present" value="95" color="green" />
-          <Card title="On Leave" value="5" color="yellow" />
-          <Card title="Absent" value="20" color="red" />
+          <Card
+            title="Total Employees"
+            value={stats.totalEmployees}
+            color="gray"
+          />
+          <Card title="Present" value={stats.presentToday} color="green" />
+          <Card title="On Leave" value={stats.onLeaveToday} color="yellow" />
+          <Card title="Absent" value={stats.absentToday} color="red" />
         </div>
 
         {/* Tables */}
@@ -100,34 +176,29 @@ export default function ManagerDashboard() {
                   <th className="p-2">Name</th>
                   <th className="p-2">Check-in Time</th>
                   <th className="p-2">Status</th>
-                  <th className="p-2">Location</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="p-2">John Doe</td>
-                  <td className="p-2">8:46 AM</td>
-                  <td className="p-2"><Badge color="green">Present</Badge></td>
-                  <td className="p-2">-</td>
-                </tr>
-                <tr>
-                  <td className="p-2">Jane Smith</td>
-                  <td className="p-2">8:57 AM</td>
-                  <td className="p-2"><Badge color="yellow">On Leave</Badge></td>
-                  <td className="p-2">Jane</td>
-                </tr>
-                <tr>
-                  <td className="p-2">Michael Brown</td>
-                  <td className="p-2">9:06 AM</td>
-                  <td className="p-2"><Badge color="green">Present</Badge></td>
-                  <td className="p-2">Andove</td>
-                </tr>
-                <tr>
-                  <td className="p-2">Emily Johnson</td>
-                  <td className="p-2">No Entry</td>
-                  <td className="p-2"><Badge color="red">Absent</Badge></td>
-                  <td className="p-2">-</td>
-                </tr>
+                {attendanceToday.map((item, index) => (
+                  <tr key={index}>
+                    <td className="p-2">{item.name}</td>
+                    <td className="p-2">{item.checkInTime || "No Entry"}</td>
+                    <td className="p-2">
+                      <Badge
+                        color={
+                          item.status === "Present"
+                            ? "green"
+                            : item.status === "On Leave"
+                            ? "yellow"
+                            : "red"
+                        }
+                      >
+                        {item.status}
+                      </Badge>
+                    </td>
+                    <td className="p-2">{item.location || "-"}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -143,8 +214,8 @@ export default function ManagerDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentRequests.map((req) => (
-                  <tr key={req.id}>
+                {recentRequests.map((req, index) => (
+                  <tr key={index}>
                     <td className="p-2">{req.name}</td>
                     <td className="p-2">{req.type}</td>
                     <td className="p-2">
@@ -176,11 +247,17 @@ export default function ManagerDashboard() {
               value={selectedDate}
               className="rounded-md"
             />
-            <p className="mt-4 text-sm">Selected Date: {selectedDate.toDateString()}</p>
+            <p className="mt-4 text-sm">
+              Selected Date: {selectedDate.toDateString()}
+            </p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Monthly Attendance Summary</h3>
-            <p className="text-sm">Placeholder for upcoming chart or summary.</p>
+            <h3 className="text-lg font-semibold mb-4">
+              Monthly Attendance Summary
+            </h3>
+            <p className="text-sm">
+              Placeholder for upcoming chart or summary.
+            </p>
           </div>
         </div>
       </main>
